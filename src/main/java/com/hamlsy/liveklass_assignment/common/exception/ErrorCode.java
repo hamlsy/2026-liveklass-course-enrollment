@@ -24,7 +24,18 @@ public enum ErrorCode {
     UNAUTHORIZED_ENROLLMENT(HttpStatus.FORBIDDEN, "본인의 수강 신청만 처리할 수 있습니다."),
 
     // Concurrency
-    ENROLLMENT_QUEUE_FULL(HttpStatus.SERVICE_UNAVAILABLE, "현재 요청이 많습니다. 잠시 후 다시 시도해주세요.");
+    ENROLLMENT_QUEUE_FULL(HttpStatus.SERVICE_UNAVAILABLE, "현재 요청이 많습니다. 잠시 후 다시 시도해주세요."),
+
+    // Creator
+    UNAUTHORIZED_CREATOR(HttpStatus.FORBIDDEN, "해당 강의의 크리에이터만 조회할 수 있습니다."),
+    MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "회원을 찾을 수 없습니다."),
+
+    // Waitlist
+    ALREADY_IN_WAITLIST(HttpStatus.BAD_REQUEST, "이미 대기열에 등록되어 있습니다."),
+    WAITLIST_NOT_FOUND(HttpStatus.NOT_FOUND, "대기열 항목을 찾을 수 없습니다."),
+    WAITLIST_UNAUTHORIZED(HttpStatus.FORBIDDEN, "본인의 대기열만 취소할 수 있습니다."),
+    WAITLIST_ALREADY_PROMOTED(HttpStatus.CONFLICT, "이미 수강 신청으로 승격된 대기열입니다. 수강 취소 API를 이용하세요."),
+    COURSE_NOT_FULL(HttpStatus.BAD_REQUEST, "강의 정원이 남아있습니다. 수강 신청을 이용하세요.");
 
     private final HttpStatus httpStatus;
     private final String message;

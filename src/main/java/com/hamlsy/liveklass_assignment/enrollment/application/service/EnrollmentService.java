@@ -12,7 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +23,7 @@ public class EnrollmentService {
     private final EnrollmentRepository enrollmentRepository;
     private final EnrollmentDomainService enrollmentDomainService;
     private final Cache<Long, CourseCapacityInfo> courseCapacityCache;
+    private final WaitlistService waitlistService;
 
     /**
      * 수강 신청 (핵심 트랜잭션)
@@ -103,11 +105,18 @@ public class EnrollmentService {
         if (actuallyCancelled) {
             Long courseId = enrollment.getCourse().getId();
 
-            // course에 Pessimistic Lock 획득 후 currentCount 감소
-            // → 동시 취소 시 Race Condition 방지
+            // Pessimistic Lock 획득 (findByIdWithCourse는 Lock 없이 로딩했으므로 별도 Lock 필요)
             Course lockedCourse = courseRepository.findByIdWithLock(courseId)
                 .orElseThrow(CourseNotFoundException::new);
-            lockedCourse.decreaseCurrentCount();
+
+            // 대기열 승격 시도 (Lock 보유 중 동일 트랜잭션 내 실행 — Propagation.MANDATORY)
+            // 승격 대상 있음: promote() + Enrollment 생성 + increaseCurrentCount()
+            //   → currentCount -1(취소) +1(승격) = 순증감 없음, decreaseCurrentCount 불필요
+            // 승격 대상 없음: decreaseCurrentCount()로 정원 반환
+            boolean promoted = waitlistService.tryPromoteNextWaiting(courseId, lockedCourse);
+            if (!promoted) {
+                lockedCourse.decreaseCurrentCount();
+            }
 
             // 캐시 무효화
             courseCapacityCache.invalidate(courseId);
@@ -117,11 +126,12 @@ public class EnrollmentService {
     }
 
     /**
-     * 내 수강 내역 조회
-     * JOIN FETCH로 N+1 방지
+     * 내 수강 내역 페이지네이션 조회
+     * JOIN FETCH + Pageable (ToOne — 행 증가 없음, 안전)
+     * 인덱스: idx_enrollment_user_enrolled_at (user_id, enrolled_at) → filesort 없음
      */
     @Transactional(readOnly = true)
-    public List<Enrollment> getMyEnrollments(Long userId) {
-        return enrollmentRepository.findAllByUserIdWithCourse(userId);
+    public Page<Enrollment> getMyEnrollmentsPage(Long userId, Pageable pageable) {
+        return enrollmentRepository.findPageByUserIdWithCourse(userId, pageable);
     }
 }
