@@ -99,7 +99,7 @@ class EnrollmentTest {
 
         @Test
         @DisplayName("결제 후 7일 초과 시 CancellationPeriodExpiredException")
-        void 7일_초과_취소_예외() {
+        void 예외_7일_초과_취소() {
             // confirmedAt을 8일 전으로 조작
             ReflectionTestUtils.setField(enrollment, "confirmedAt",
                 LocalDateTime.now().minusDays(8));

@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.QueryHints;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,5 +24,5 @@ public interface CourseJpaRepository extends JpaRepository<Course, Long>, Course
         value = "3000"   // 3초 초과 → PessimisticLockException
     ))
     @Query("SELECT c FROM Course c WHERE c.id = :id")
-    Optional<Course> findByIdWithLock(Long id);
+    Optional<Course> findByIdWithLock(@Param("id") Long id);
 }

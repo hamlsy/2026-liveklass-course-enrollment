@@ -1,6 +1,6 @@
 package com.hamlsy.liveklass_assignment.common.idempotency;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+//import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.benmanes.caffeine.cache.Cache;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * POST /enrollments 멱등성 처리 인터셉터
@@ -33,7 +34,7 @@ public class IdempotencyInterceptor implements HandlerInterceptor {
     public static final String IDEMPOTENCY_KEY_ATTR = "idempotencyKey";
 
     private final Cache<String, IdempotencyResponse> idempotencyCache;
-    private final ObjectMapper objectMapper;
+    private final tools.jackson.databind.ObjectMapper objectMapper;
 
     @Override
     public boolean preHandle(HttpServletRequest request,

@@ -90,7 +90,7 @@ class CourseTest {
 
         @Test
         @DisplayName("이미 0이면 음수가 되지 않음 (방어 코드)")
-        void 0이하_방어() {
+        void 이하_방어() {
             openCourse.decreaseCurrentCount(); // 이미 0
             assertThat(openCourse.getCurrentCount()).isEqualTo(0);
         }
