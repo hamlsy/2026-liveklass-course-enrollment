@@ -15,6 +15,7 @@ public class CreateCourseUseCase {
 
     public CourseDetailResponse execute(CreateCourseRequest request) {
         Course course = Course.builder()
+            .creatorId(request.creatorId())
             .title(request.title())
             .description(request.description())
             .price(request.price())

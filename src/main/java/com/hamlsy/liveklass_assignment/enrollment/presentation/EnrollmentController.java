@@ -1,13 +1,16 @@
 package com.hamlsy.liveklass_assignment.enrollment.presentation;
 
+import com.hamlsy.liveklass_assignment.common.response.PageResponse;
+import com.hamlsy.liveklass_assignment.course.presentation.response.CourseEnrollmentListResponse;
 import com.hamlsy.liveklass_assignment.enrollment.application.usecase.*;
 import com.hamlsy.liveklass_assignment.enrollment.presentation.request.CreateEnrollmentRequest;
 import com.hamlsy.liveklass_assignment.enrollment.presentation.response.EnrollmentResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/enrollments")
@@ -18,6 +21,7 @@ public class EnrollmentController {
     private final ConfirmPaymentUseCase confirmPaymentUseCase;
     private final CancelEnrollmentUseCase cancelEnrollmentUseCase;
     private final GetMyEnrollmentsUseCase getMyEnrollmentsUseCase;
+    private final GetCourseEnrollmentsUseCase getCourseEnrollmentsUseCase;
 
     /**
      * 수강 신청
@@ -50,8 +54,43 @@ public class EnrollmentController {
         return cancelEnrollmentUseCase.execute(enrollmentId, userId);
     }
 
+    /**
+     * 내 수강 내역 조회 (페이지네이션)
+     *
+     * 기본값: page=0, size=10, sort=enrolledAt DESC (최신 신청 순)
+     * max-page-size: 100 (application.yaml)
+     *
+     * 예시:
+     *   GET /enrollments/me?userId=1
+     *   GET /enrollments/me?userId=1&page=0&size=5
+     *   GET /enrollments/me?userId=1&page=1&size=10&sort=enrolledAt,ASC
+     */
     @GetMapping("/me")
-    public List<EnrollmentResponse> getMyEnrollments(@RequestParam Long userId) {
-        return getMyEnrollmentsUseCase.execute(userId);
+    public PageResponse<EnrollmentResponse> getMyEnrollments(
+        @RequestParam Long userId,
+        @PageableDefault(size = 10, sort = "enrolledAt", direction = Sort.Direction.DESC)
+        Pageable pageable
+    ) {
+        return getMyEnrollmentsUseCase.execute(userId, pageable);
+    }
+
+    /**
+     * 강의별 수강생 목록 조회 (크리에이터 전용, 페이지네이션)
+     *
+     * 기본값: page=0, size=20, sort=enrolledAt ASC
+     * 예시:
+     *   GET /enrollments/courses/1/enrollments?creatorId=10
+     *   GET /enrollments/courses/1/enrollments?creatorId=10&page=1&size=10
+     *
+     * @param creatorId 요청자 ID (실 서비스: SecurityContext에서 추출)
+     */
+    @GetMapping("/courses/{courseId}/enrollments")
+    public CourseEnrollmentListResponse getCourseEnrollments(
+        @PathVariable Long courseId,
+        @RequestParam Long creatorId,
+        @PageableDefault(size = 20, sort = "enrolledAt", direction = Sort.Direction.ASC)
+        Pageable pageable
+    ) {
+        return getCourseEnrollmentsUseCase.execute(courseId, creatorId, pageable);
     }
 }

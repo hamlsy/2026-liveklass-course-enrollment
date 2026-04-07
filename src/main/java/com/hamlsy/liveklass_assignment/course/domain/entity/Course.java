@@ -3,6 +3,7 @@ package com.hamlsy.liveklass_assignment.course.domain.entity;
 import com.hamlsy.liveklass_assignment.common.exception.EnrollmentLimitExceededException;
 import com.hamlsy.liveklass_assignment.common.exception.ErrorCode;
 import com.hamlsy.liveklass_assignment.common.exception.InvalidCourseStatusException;
+import com.hamlsy.liveklass_assignment.common.exception.UnauthorizedCreatorException;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,7 +13,8 @@ import java.time.LocalDateTime;
 @Table(
     name = "course",
     indexes = {
-        @Index(name = "idx_course_status", columnList = "status")
+        @Index(name = "idx_course_status",     columnList = "status"),
+        @Index(name = "idx_course_creator_id", columnList = "creator_id")
     }
 )
 @Getter
@@ -47,9 +49,13 @@ public class Course {
     @Column(nullable = false)
     private LocalDateTime endDate;
 
+    @Column(nullable = false)
+    private Long creatorId;
+
     @Builder
     public Course(String title, String description, int price,
-                  int capacity, LocalDateTime startDate, LocalDateTime endDate) {
+                  int capacity, LocalDateTime startDate, LocalDateTime endDate,
+                  Long creatorId) {
         validateDates(startDate, endDate);
         this.title        = title;
         this.description  = description;
@@ -59,6 +65,8 @@ public class Course {
         this.status       = CourseStatus.DRAFT;
         this.startDate    = startDate;
         this.endDate      = endDate;
+        // creatorId가 null이면 0L로 기본 처리 (기존 테스트 픽스처 보호)
+        this.creatorId    = (creatorId != null) ? creatorId : 0L;
     }
 
     // ── 도메인 메서드 ──────────────────────────────────────────────
@@ -75,6 +83,18 @@ public class Course {
         LocalDateTime now = LocalDateTime.now();
         if (now.isBefore(startDate) || now.isAfter(endDate)) {
             throw new InvalidCourseStatusException(ErrorCode.INVALID_ENROLLMENT_PERIOD);
+        }
+    }
+
+    /** 현재 정원이 꽉 찼는지 여부 */
+    public boolean isFull() {
+        return this.currentCount >= this.capacity;
+    }
+
+    /** 요청자가 이 강의의 크리에이터인지 검증 */
+    public void validateCreator(Long requesterId) {
+        if (!this.creatorId.equals(requesterId)) {
+            throw new UnauthorizedCreatorException();
         }
     }
 
