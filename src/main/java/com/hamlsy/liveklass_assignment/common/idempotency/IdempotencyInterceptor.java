@@ -30,7 +30,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 public class IdempotencyInterceptor implements HandlerInterceptor {
 
     public static final String IDEMPOTENCY_KEY_HEADER = "Idempotency-Key";
-    static final String IDEMPOTENCY_KEY_ATTR = "idempotencyKey";
+    public static final String IDEMPOTENCY_KEY_ATTR = "idempotencyKey";
 
     private final Cache<String, IdempotencyResponse> idempotencyCache;
     private final ObjectMapper objectMapper;
