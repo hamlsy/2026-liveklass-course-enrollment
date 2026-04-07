@@ -22,7 +22,12 @@ import java.time.LocalDateTime;
         // 중복 신청 검증: WHERE user_id = ? AND course_id = ? AND status IN (...)
         // Covering Index — 인덱스만으로 EXISTS 처리 (테이블 Row 접근 없음)
         @Index(name = "idx_enrollment_user_course_status",
-               columnList = "user_id, course_id, status")
+               columnList = "user_id, course_id, status"),
+
+        // 내 수강 내역 페이지네이션: WHERE user_id = ? ORDER BY enrolled_at DESC
+        // 복합 인덱스로 Index Range Scan — filesort 없음
+        @Index(name = "idx_enrollment_user_enrolled_at",
+               columnList = "user_id, enrolled_at")
     }
 )
 @Getter
