@@ -62,6 +62,37 @@
       "keyFiles": []
     }
   },
-  "hotPaths": [],
+  "hotPaths": [
+    {
+      "path": "README.md",
+      "accessCount": 1,
+      "lastAccessed": 1775536379927,
+      "type": "file"
+    },
+    {
+      "path": "src\\main\\resources\\application.yaml",
+      "accessCount": 1,
+      "lastAccessed": 1775536388421,
+      "type": "file"
+    },
+    {
+      "path": "docs\\REQUIREMENTS.md",
+      "accessCount": 1,
+      "lastAccessed": 1775536388681,
+      "type": "file"
+    },
+    {
+      "path": "src\\main\\java\\com\\hamlsy\\liveklass_assignment\\LiveklassAssignmentApplication.java",
+      "accessCount": 1,
+      "lastAccessed": 1775536388915,
+      "type": "file"
+    },
+    {
+      "path": "CLAUDE.md",
+      "accessCount": 1,
+      "lastAccessed": 1775536750419,
+      "type": "file"
+    }
+  ],
   "userDirectives": []
 }
